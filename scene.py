@@ -1,4 +1,4 @@
-from primitives import Sphere, Cube, Cone
+from primitives import Sphere, Cube, Cone, Cylinder
 from objects import Vec3f, Light, number_on_vector_mult
 from materials import Red, Glass, Ivory
 import math
@@ -104,10 +104,11 @@ class Scene:
         mat_1 = Ivory()
         mat_2 = Red()
         #self.objects = load_model("bunny.txt", mat)
-        s = Sphere(Vec3f(0, 0, -16), 5, mat_2)
-        self.objects.append(s)
+        #s = Sphere(Vec3f(0, 0, -16), 5, mat_2)
+        #self.objects.append(s)
 
-        #self.objects.append(Cone(Vec3f(0, -5.0, -16), 10, 5, mat_1));
+        #self.objects.append(Cylinder(Vec3f(0, 5, -16), Vec3f(0, -5, -16), 25, mat_1))
+        self.objects.append(Cone(Vec3f(0, -5.0, -16), 10, 5, mat_2));
         #self.objects.append(Cube(Vec3f(-5, 0, -16), 3, mat_1));
         #self.objects.append(Cube(Vec3f(5, 0, -16), 3, mat_2));
 
@@ -125,7 +126,6 @@ class Scene:
         mx = max(c.x, max(c.y, c.z))
         
         if mx > 1:
-
             c = c * (1.0 / mx)
 
         c.x = round(255 * max(0.0, min(1.0, c.x)))
