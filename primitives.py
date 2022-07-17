@@ -1,5 +1,6 @@
 from objects import Object, Vec3f, crossProduct, number_on_vector_mult
 import math
+import numpy as np
 
 ### Sphere
 
@@ -170,18 +171,18 @@ class Cone(Object):
         t1 = (-b - math.sqrt(delta))/(2*a)
         t2 = (-b + math.sqrt(delta))/(2*a)
 
-        if (t1 > t2):
-            self.tau = t2
-        else:
+        if (t1 > self.eps):
             self.tau = t1
-
-        if self.tau < 0:
-            return False
-
-        r = ray_src.y + self.tau * ray_dir.y
-        if ((r > self.center.y) and (r < self.center.y + self.height)):
-            return True
-
+            r = ray_src.y + self.tau * ray_dir.y
+            if ((r > self.center.y) and (r < self.center.y + self.height)):
+                return True
+        else:
+            if (t2 > self.eps):
+                self.tau = t2
+                r = ray_src.y + self.tau * ray_dir.y
+                if ((r > self.center.y) and (r < self.center.y + self.height)):
+                    return True
+           
         return False
 
     def isIntersect(self, ray_src, ray_dir):
@@ -199,22 +200,17 @@ class Cone(Object):
 
 ## Cylinder
 class Cylinder(Object):
-    def __init__(self, center_top, center_bottom, radius, material):
-        self.center_top = center_top
-        self.center_bottom = center_bottom
-        self.center = Vec3f(0.5 * (self.center_top.x - self.center_bottom.x),
-                            0.5 * (self.center_top.y - self.center_bottom.y),
-                            0.5 * (self.center_top.z - self.center_bottom.z))
-
-        self.height = (self.center_top.y - self.center_bottom.y)
-            
+    def __init__(self, center, height, radius, material):
+        self.center = center
+        self.height = height   
         self.radius = radius
+        
         self.normal = ''
         self.material = material
         self.tau = -1
         self.eps = 1e-9
 
-
+    
     def check_intersect(self, ray_src, ray_dir):
         a = (ray_dir.x * ray_dir.x) + (ray_dir.z * ray_dir.z)
         b = 2 * (ray_dir.x * (ray_src.x - self.center.x) + ray_dir.z * (ray_src.z - self.center.z))
@@ -231,97 +227,191 @@ class Cylinder(Object):
         t1 = (-b - math.sqrt(delta))/(2*a)
         t2 = (-b + math.sqrt(delta))/(2*a)
 
-        if (t1 > t2):
-            self.tau = t2
-        else:
+        if (t1 > self.eps):
             self.tau = t1
-
-        #if self.tau < 0:
-            #return False
-
-        r = ray_src.y + self.tau * ray_dir.y
-        
-        if ((r >= self.center.y) and (r <= self.center.y + self.height)):
-            return True
-
-        return False
-        
-        '''
-        h = self.center_top - self.center_bottom
-        a_bottom = ray_src - self.center_bottom
-        a_bottom_h = crossProduct(a_bottom, h)
-        ray_dir_h = crossProduct(ray_dir, h)
-
-        h2 = h * h
-        a = ray_dir_h * ray_dir_h
-        b = number_on_vector_mult(2, ray_dir_h) * a_bottom_h
-        c = a_bottom_h * a_bottom_h - (self.radius * self.radius - h2)
-        d = b * b - 4 * a * c
-
-        t1 = 0
-        t2 = 0
-        ip = ''
-
-        if (d > 0):
-            t1 = (-b - math.sqrt(d))/(2*a)
-            t2 = (-b + math.sqrt(d))/(2*a)
-
-            if (t1 > t2):
-                self.tau = t2
-            else:
-                self.tau = t1
-
-            if (self.tau > 0):
-                ip = ray_src + number_on_vector_mult(self.tau, ray_dir)
-                h_ = self.center_top - self.center_bottom
-                v = h_ * (ip - self.center_bottom) > 0 and h_ * (ip - self.center_top) < 0
-                if not v:
-                    self.tau = -1
-            else:
-                return False
-
+            r = ray_src.y + self.tau * ray_dir.y
+            if ((r > self.center.y) and (r < self.center.y + self.height)):
+                return True
         else:
-            return False
-            
-
-        v = ip - self.center_bottom
-        tmp = number_on_vector_mult(h, (number_on_vector_mult(h, v)))
-        tmp.x = tmp.x / (h*h)
-        tmp.y = tmp.y / (h*h)
-        tmp.z = tmp.z / (h*h)
-
-        normal_ = v - tmp;
-
-        ncap = self.center_top - self.center_bottom;
-        tcap = self.cap_hit(self.center_bottom, ncap, ray_src, ray_dir, self.radius);
-
-        if ((tcap >= 0 and tcap < self.tau) or self.tau < 0):
-            self.tau = tcap
-            normal_ = ncap
-    
-
-        ncap = (self.center_bottom - self.center_top)
-        tcap = self.cap_hit(self.center_top, ncap, ray_src, ray_dir, self.radius)
-
-        if ((tcap >= 0 and tcap < self.tau) or self.tau < 0):
-            self.tau = tcap
-            self.normal = ncap
-
-        if (self.tau < 0):
-            return False
-        '''
-        return True
+            if (t2 > self.eps):
+                self.tau = t2
+                r = ray_src.y + self.tau * ray_dir.y
+                if ((r > self.center.y) and (r < self.center.y + self.height)):
+                    return True
+           
+        return False
 
 
     def isIntersect(self, ray_src, ray_dir):
         if self.check_intersect(ray_src, ray_dir):
             self.intersection_point = ray_src +  ray_dir * self.tau
-            self.normal = Vec3f(self.intersection_point.x - self.center.x,
-                                0,
-                                self.intersection_point.z - self.center.z)
-                                
+            self.normal = Vec3f(self.intersection_point.x - self.center.x, 0, self.intersection_point.z - self.center.z) 
             self.normal.normalize()
             return True
 
         return False
 
+#Эллипсоид
+class Ellipsoid(Object):
+    def __init__(self, center, a, b, c, material):
+        self.center = center
+        self.a = a
+        self.b = b
+        self.c = c
+        self.material = material
+        self.normal = None
+        self.tau = -1
+        self.eps = 1e-6
+
+    def check_intersect(self, ray_src, ray_dir):
+        axis = Vec3f(self.a, self.b, self.c)
+        axis_dir = Vec3f(float(ray_dir.x) / self.a, float(ray_dir.y) / self.b, float(ray_dir.z) / self.c)
+        axis_src = Vec3f(float(ray_src.x) / self.a, float(ray_src.y) / self.b, float(ray_src.z) / self.c)
+        axis_center = Vec3f(float(self.center.x) / self.a, float(self.center.y) / self.b, float(self.center.z) / self.c)
+
+        temp = math.sqrt(axis_dir.x * axis_dir.x + axis_dir.y * axis_dir.y + axis_dir.z * axis_dir.z)
+        A =  temp * temp
+        B = 2 * (axis_dir * (axis_src - axis_center))
+
+        tmp = axis_src - axis_center;
+        math.sqrt(tmp.x * tmp.x + tmp.y * tmp.y + tmp.z * tmp.z)
+        C = temp * temp - 1
+        disc = (B * B) - (4 * A * C)
+
+        t1 = (-B + math.sqrt(disc))/(2*A);
+        t2 = (-B - math.sqrt(disc))/(2*A);
+    
+        if t1 > self.eps:
+            self.tau = t1
+            return True
+
+        if t2 > self.eps:
+            self.tau = t2
+            return True
+    
+        return False
+
+    def isIntersect(self, ray_src, ray_dir):
+        if self.check_intersect(ray_src, ray_dir):
+            self.intersection_point = ray_src +  ray_dir * self.tau
+            self.normal = self.intersection_point - self.center
+            self.normal = Vec3f(2 * self.normal.x / (self.a * self.a),
+                                2 * self.normal.y / (self.b * self.b),
+                                2 * self.normal.z / (self.c * self.c))
+            self.normal.normalize()
+            return True
+
+        return False
+    
+
+#Парабалоид
+class Paraboloid(Object):
+    def __init__(self, center, size, max_y, material):
+        self.center = center
+        self.max_y = max_y
+        self.size = size
+        
+        self.material = material
+        self.normal = None
+        self.tau = -1
+        self.eps = 1e-6
+
+    def check_intersect(self, ray_src, ray_dir):
+        dist = ray_src - self.center
+        A =   ray_dir.x * ray_dir.x + ray_dir.z * ray_dir.z
+        B = 2 * ((dist.x * ray_dir.x) + (dist.z * ray_dir.z)) - ray_dir.y
+        C =  (dist.x * dist.x) + (dist.z * dist.z) - (dist.y + self.size)
+
+        disc = B * B - (4 * A * C)
+        if (disc < 0):
+           return False
+
+        t1 = (-B + math.sqrt(disc))/(2*A)
+        t2 = (-B - math.sqrt(disc))/(2*A)
+    
+        if ((t2 <= t1 or t1 < self.eps) and t2 > self.eps):
+            t1 = t2
+            self.tau = t1
+            return True
+    
+        elif ((t1 < t2 or t2 < self.eps) and t1 > self.eps):
+             self.tau = t1
+             return True
+    
+        else:
+            return False
+    
+        return False
+
+    def isIntersect(self, ray_src, ray_dir):
+        if self.check_intersect(ray_src, ray_dir):
+            self.intersection_point = ray_src +  ray_dir * self.tau
+
+            if (self.intersection_point.y < self.max_y):
+                r = self.intersection_point - self.center;
+
+                self.normal = Vec3f(2 * r.x, -1, 2 * r.z)
+                self.normal.normalize();
+
+                return True
+    
+        return False
+    
+#Гиперболоид
+class Hyperboloid(Object):
+    def __init__(self, center, size, max_y, min_y, type, material):
+        self.center = center
+        self.max_y = max_y
+        self.min_y = min_y
+        self.size = size
+        self.type = type
+        self.material = material
+        self.normal = None
+        self.tau = -1
+        self.eps = 1e-6
+
+    def check_intersect(self, ray_src, ray_dir):
+        dist = ray_src - self.center
+        A = (ray_dir.x * ray_dir.x) + (ray_dir.z * ray_dir.z) - (ray_dir.y * ray_dir.y)
+        B = 2.0 * ((dist.x * ray_dir.x) + (dist.z * ray_dir.z) - (dist.y * ray_dir.y))
+        C = 0.0
+
+        if (self.type == 0):
+            C = (dist.x * dist.x) + (dist.z * dist.z) - ((dist.y * dist.y) + self.size)
+        else:
+            C = (dist.x * dist.x) + (dist.z * dist.z) - ((dist.y * dist.y) - self.size)
+            
+        disc = B * B - (4 * A * C)
+        if (disc < 0):
+           return False
+
+        t1 = (-B + math.sqrt(disc))/(2*A)
+        t2 = (-B - math.sqrt(disc))/(2*A)
+    
+        if ((t2 <= t1 or t1 < self.eps) and t2 > self.eps):
+            t1 = t2
+            self.tau = t1
+            return True
+    
+        elif ((t1 < t2 or t2 < self.eps) and t1 > self.eps):
+             self.tau = t1
+             return True
+    
+        else:
+            return False
+    
+        return False
+
+    def isIntersect(self, ray_src, ray_dir):
+        if self.check_intersect(ray_src, ray_dir):
+            self.intersection_point = ray_src +  ray_dir * self.tau
+
+            if (self.intersection_point.y > self.min_y and self.intersection_point.y < self.max_y):
+                r = self.intersection_point - self.center;
+
+                self.normal = Vec3f(2 * r.x, -2 * r.y, 2 * r.z)
+                self.normal.normalize();
+
+                return True
+    
+        return False        

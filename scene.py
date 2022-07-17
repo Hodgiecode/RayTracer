@@ -1,4 +1,4 @@
-from primitives import Sphere, Cube, Cone, Cylinder
+from primitives import Sphere, Cube, Cone, Cylinder, Ellipsoid, Paraboloid, Hyperboloid
 from objects import Vec3f, Light, number_on_vector_mult
 from materials import Red, Glass, Ivory
 import math
@@ -103,14 +103,30 @@ class Scene:
 
         mat_1 = Ivory()
         mat_2 = Red()
+        mat_3 = Glass()
+        
         #self.objects = load_model("bunny.txt", mat)
-        #s = Sphere(Vec3f(0, 0, -16), 5, mat_2)
-        #self.objects.append(s)
+        #s1 = Sphere(Vec3f(-3, 0, -16), 5, mat_3)
+        #s2 = Sphere(Vec3f(0, 0, -16), 5, mat_2)
+        #s3 = Sphere(Vec3f(3, 3, -16), 5, mat_3)
 
-        #self.objects.append(Cylinder(Vec3f(0, 5, -16), Vec3f(0, -5, -16), 25, mat_1))
-        self.objects.append(Cone(Vec3f(0, -5.0, -16), 10, 5, mat_2));
+        #self.objects.append(Cone(Vec3f(0, -5.0, -16), 10, 5, mat_1));
+        #self.objects.append(s1)
+        #self.objects.append(s2)
+        #self.objects.append(s3)
+
+        #self.objects.append(Cylinder(Vec3f(0, -5, -16), 10, 3, mat_1))
+        #self.objects.append(Cone(Vec3f(0, -5.0, -16), 10, 5, mat_2));
         #self.objects.append(Cube(Vec3f(-5, 0, -16), 3, mat_1));
         #self.objects.append(Cube(Vec3f(5, 0, -16), 3, mat_2));
+
+        #self.objects.append(Paraboloid(Vec3f(0, 0, -16), 3, 5, mat_3))
+
+        self.objects.append(Ellipsoid(Vec3f(0, 0, -16), 8, 5, 3, mat_3))
+
+        #self.objects.append(Hyperboloid(Vec3f(-5,0,-16), 3, 5, -5, 0, mat_1))
+        #self.objects.append(Hyperboloid(Vec3f(5,0,-16), 3, 5, -5, 1, mat_1))
+        
 
     def get_pixel(self, x, y, w, h):
         fov = 3.14 / 3.0;
@@ -128,17 +144,17 @@ class Scene:
         if mx > 1:
             c = c * (1.0 / mx)
 
-        c.x = round(255 * max(0.0, min(1.0, c.x)))
-        c.y = round(255 * max(0.0, min(1.0, c.y)))
-        c.z = round(255 * max(0.0, min(1.0, c.z)))
+        c.x = int(255 * max(0.0, min(1.0, c.x)))
+        c.y = int(255 * max(0.0, min(1.0, c.y)))
+        c.z = int(255 * max(0.0, min(1.0, c.z)))
 
         return c
         
         
         
 ###
-W = 600
-H = 400
+W = 200
+H = 100
 img = Image.new( mode = "RGB", size = (W, H) )
 data = []
 scene = Scene(W, H)
