@@ -105,7 +105,7 @@ class Scene:
         mat_2 = Red()
         mat_3 = Glass()
         
-        #self.objects = load_model("bunny.txt", mat)
+        self.objects = load_model("bunny.txt", mat_1)
         #s1 = Sphere(Vec3f(-3, 0, -16), 5, mat_3)
         #s2 = Sphere(Vec3f(0, 0, -16), 5, mat_2)
         #s3 = Sphere(Vec3f(3, 3, -16), 5, mat_3)
@@ -122,7 +122,7 @@ class Scene:
 
         #self.objects.append(Paraboloid(Vec3f(0, 0, -16), 3, 5, mat_3))
 
-        self.objects.append(Ellipsoid(Vec3f(0, 0, -16), 8, 5, 3, mat_3))
+        #self.objects.append(Ellipsoid(Vec3f(0, 0, -16), 8, 5, 3, mat_3))
 
         #self.objects.append(Hyperboloid(Vec3f(-5,0,-16), 3, 5, -5, 0, mat_1))
         #self.objects.append(Hyperboloid(Vec3f(5,0,-16), 3, 5, -5, 1, mat_1))
@@ -153,8 +153,8 @@ class Scene:
         
         
 ###
-W = 200
-H = 100
+W = 300
+H = 200
 img = Image.new( mode = "RGB", size = (W, H) )
 data = []
 scene = Scene(W, H)

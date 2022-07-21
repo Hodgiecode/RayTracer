@@ -53,7 +53,7 @@ class Triangle(Object):
         self.C = C
         self.material = material
         self.tau = -1
-        self.eps = 0.001
+        self.eps = 0.00001
 
     def check_intersect(self, ray_src, ray_dir):
         e1 = self.B - self.A
@@ -70,12 +70,12 @@ class Triangle(Object):
         if u < 0 or u > det:
             return False
 
-        qvec = crossProduct(tvec,e1)
+        qvec = crossProduct(tvec, e1)
         v = ray_dir * qvec
 
-        if v<0 or u + v > det:
+        if v < 0 or u + v > det:
             return False
-
+            
         self.tau = e2 * qvec * (1.0 / det)
         return self.tau > self.eps
 
@@ -274,12 +274,15 @@ class Ellipsoid(Object):
         B = 2 * (axis_dir * (axis_src - axis_center))
 
         tmp = axis_src - axis_center;
-        math.sqrt(tmp.x * tmp.x + tmp.y * tmp.y + tmp.z * tmp.z)
+        temp = math.sqrt(tmp.x * tmp.x + tmp.y * tmp.y + tmp.z * tmp.z)
         C = temp * temp - 1
         disc = (B * B) - (4 * A * C)
+        
+        if (disc < 0):
+           return False
 
-        t1 = (-B + math.sqrt(disc))/(2*A);
-        t2 = (-B - math.sqrt(disc))/(2*A);
+        t1 = (-B - math.sqrt(disc))/(2 * A);
+        t2 = (-B + math.sqrt(disc))/(2 * A);
     
         if t1 > self.eps:
             self.tau = t1
@@ -326,20 +329,16 @@ class Paraboloid(Object):
         if (disc < 0):
            return False
 
-        t1 = (-B + math.sqrt(disc))/(2*A)
-        t2 = (-B - math.sqrt(disc))/(2*A)
+        t1 = (-B - math.sqrt(disc))/(2 * A);
+        t2 = (-B + math.sqrt(disc))/(2 * A);
     
-        if ((t2 <= t1 or t1 < self.eps) and t2 > self.eps):
-            t1 = t2
+        if t1 > self.eps:
             self.tau = t1
             return True
-    
-        elif ((t1 < t2 or t2 < self.eps) and t1 > self.eps):
-             self.tau = t1
-             return True
-    
-        else:
-            return False
+
+        if t2 > self.eps:
+            self.tau = t2
+            return True
     
         return False
 
@@ -385,20 +384,16 @@ class Hyperboloid(Object):
         if (disc < 0):
            return False
 
-        t1 = (-B + math.sqrt(disc))/(2*A)
-        t2 = (-B - math.sqrt(disc))/(2*A)
+        t1 = (-B - math.sqrt(disc))/(2 * A);
+        t2 = (-B + math.sqrt(disc))/(2 * A);
     
-        if ((t2 <= t1 or t1 < self.eps) and t2 > self.eps):
-            t1 = t2
+        if t1 > self.eps:
             self.tau = t1
             return True
-    
-        elif ((t1 < t2 or t2 < self.eps) and t1 > self.eps):
-             self.tau = t1
-             return True
-    
-        else:
-            return False
+
+        if t2 > self.eps:
+            self.tau = t2
+            return True
     
         return False
 
