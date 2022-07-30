@@ -120,7 +120,7 @@ class Cube(Object):
 
             t = (n * o_to_c + self.side) / n_dot_d
 
-            if t > t_min and t_min >= 0.0:
+            if t > t_min and t_min >= self.eps:
                 continue
 
             diff = ray_src + ray_dir * t - self.center
@@ -128,12 +128,9 @@ class Cube(Object):
                 t_min = t
                 int_normal = n
 
-        if t_min < 0.0:
+        if t_min < self.eps:
             return False
-
-        if int_normal == '':
-            return False
-
+        
         self.tau = t_min
         self.normal = int_normal
         return True
