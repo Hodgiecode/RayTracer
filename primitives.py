@@ -1,5 +1,7 @@
 from objects import Object, Vec3f, crossProduct, number_on_vector_mult
+from solver import Solver
 import math
+from numpy.polynomial import polynomial as P
 import numpy as np
 
 ### Sphere
@@ -77,7 +79,11 @@ class Triangle(Object):
             return False
             
         self.tau = e2 * qvec * (1.0 / det)
-        return self.tau > self.eps
+        
+        if self.tau < self.eps:
+            return False
+            
+        return True
 
     def isIntersect(self, ray_src, ray_dir):
         if self.check_intersect(ray_src, ray_dir):
@@ -123,6 +129,9 @@ class Cube(Object):
                 int_normal = n
 
         if t_min < 0.0:
+            return False
+
+        if int_normal == '':
             return False
 
         self.tau = t_min
@@ -409,4 +418,80 @@ class Hyperboloid(Object):
 
                 return True
     
-        return False        
+        return False
+        
+#Torus
+class Torus(Object):   
+    def __init__(self, center, r1, r2, axis, material):
+        self.center = center
+        self.r = r1
+        self.R = r2
+        self.axis = axis
+        self.material = material
+        
+        self.normal = None
+        self.tau = -1
+        self.eps = 1e-6
+
+    def check_intersect(self, ray_src, ray_dir):
+        self.axis.normalize()
+        
+        e = ray_src - self.center
+        d = ray_dir
+
+        d.normalize()
+
+        iR = self.R * self.R - self.r * self.r
+        oR = 4 * self.R * self.R
+        L = (e.x * e.x + e.y * e.y + e.z * e.z) + iR
+        e_dot_d = e * d
+
+        c4 = (d.x * d.x + d.y * d.y + d.z * d.z) * (d.x * d.x + d.y * d.y + d.z * d.z)
+        c3 = 4 * (d.x * d.x + d.y * d.y + d.z * d.z) * e_dot_d
+        c2 = 2 * (2 * ((e_dot_d) * (e_dot_d)) + (d.x * d.x + d.y * d.y + d.z * d.z) * L) - oR * ((d.x * d.x) + (d.y * d.y))
+        c1 = 4 * e_dot_d * L - 2 * oR * (e.x * d.x + e.y * d.y)
+        c0 = (L * L) - oR * ((e.x * e.x) + (e.y * e.y))
+		
+        solver = Solver()
+        num_roots = solver.solve_p4(c3/c4, c2/c4, c1/c4, c0/c4)
+        
+        if (num_roots == 0):
+          return False
+
+        rts = solver.x
+        
+        intersect = False
+        min_t = 9999999
+        
+        for i in range(num_roots):
+            t = rts[i]
+            if (t > 1e-5 and t < min_t):
+                min_t = t
+                intersect = True
+        
+        if intersect == False:
+            return False
+        
+        self.tau = min_t
+        return True
+    
+    def isIntersect(self, ray_src, ray_dir):
+        if self.check_intersect(ray_src, ray_dir):
+            self.intersection_point = ray_src +  ray_dir * self.tau
+            p = self.intersection_point - self.center;
+
+            cos_theta = (self.axis * p)/(math.sqrt(p.x * p.x + p.y * p.y + p.z * p.z));
+            sin_theta = math.sqrt(1 - cos_theta * cos_theta);
+
+            p.normalize();
+
+            self.normal = p - number_on_vector_mult((1.0 / sin_theta), number_on_vector_mult(self.R , (p - number_on_vector_mult(cos_theta, self.axis))))
+            self.normal = number_on_vector_mult((1.0 / self.r), self.normal)
+            self.normal.normalize()
+            return True
+			
+        return False
+
+        
+    
+           

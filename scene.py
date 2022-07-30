@@ -1,6 +1,6 @@
-from primitives import Sphere, Cube, Cone, Cylinder, Ellipsoid, Paraboloid, Hyperboloid
+from primitives import Sphere, Cube, Cone, Cylinder, Ellipsoid, Paraboloid, Hyperboloid, Torus
 from objects import Vec3f, Light, number_on_vector_mult
-from materials import Red, Glass, Ivory
+from materials import Red, Glass, Ivory, Mirror
 import math
 from PIL import Image
 from loads import load_model
@@ -104,8 +104,16 @@ class Scene:
         mat_1 = Ivory()
         mat_2 = Red()
         mat_3 = Glass()
+        mat_4 = Mirror()
         
-        self.objects = load_model("bunny.txt", mat_1)
+        self.objects.append(Torus(Vec3f(-5, 1, -16), 1.0, 2.5, Vec3f(-1, 0, -16), mat_2))
+        self.objects.append(Cone(Vec3f(-5, -6.0, -16), 3, 3, mat_2))
+        self.objects.append(Cylinder(Vec3f(0, -2, -16), 8, 2, mat_1))
+        self.objects.append(Sphere(Vec3f(-2, -1, -16), 3, mat_4))
+        self.objects.append(Sphere(Vec3f(4, 3, -16), 3, mat_3))
+        self.objects.append(Cube(Vec3f(5, -4.0, -16), 2, mat_2));
+		
+		#self.objects = load_model("bunny.txt", mat_1)
         #s1 = Sphere(Vec3f(-3, 0, -16), 5, mat_3)
         #s2 = Sphere(Vec3f(0, 0, -16), 5, mat_2)
         #s3 = Sphere(Vec3f(3, 3, -16), 5, mat_3)
@@ -144,9 +152,9 @@ class Scene:
         if mx > 1:
             c = c * (1.0 / mx)
 
-        c.x = int(255 * max(0.0, min(1.0, c.x)))
-        c.y = int(255 * max(0.0, min(1.0, c.y)))
-        c.z = int(255 * max(0.0, min(1.0, c.z)))
+        c.x = round(255 * max(0.0, min(1.0, c.x)))
+        c.y = round(255 * max(0.0, min(1.0, c.y)))
+        c.z = round(255 * max(0.0, min(1.0, c.z)))
 
         return c
         
@@ -154,7 +162,7 @@ class Scene:
         
 ###
 W = 300
-H = 200
+H = 300
 img = Image.new( mode = "RGB", size = (W, H) )
 data = []
 scene = Scene(W, H)

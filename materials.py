@@ -40,3 +40,13 @@ class Ivory(Material):
         self.albedo_p4 = 0.0
         self.color = Vec3f(0.4, 0.4, 0.3)
         self.specular = 50.0
+        
+class Mirror(Material):
+    def __init__(self):
+        self.refractive_index = 1.0
+        self.albedo_p1 = 0.0
+        self.albedo_p2 = 10.0
+        self.albedo_p3 = 0.8
+        self.albedo_p4 = 0.0
+        self.color = Vec3f(1.0, 1.0, 1.0)
+        self.specular = 1425.0
