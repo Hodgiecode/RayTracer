@@ -105,15 +105,16 @@ class Scene:
         mat_2 = Red()
         mat_3 = Glass()
         mat_4 = Mirror()
-        
-        self.objects.append(Torus(Vec3f(-5, 1, -16), 1.0, 2.5, Vec3f(-1, 0, -16), mat_2))
-        self.objects.append(Cone(Vec3f(-5, -6.0, -16), 3, 3, mat_2))
+
         self.objects.append(Cylinder(Vec3f(0, -2, -16), 8, 2, mat_1))
+        self.objects.append(Torus(Vec3f(-5, 1, -16), 1.4, 2.0, 90, mat_2))
+        self.objects.append(Cone(Vec3f(-5, -6.0, -16), 3, 3, mat_2))
         self.objects.append(Sphere(Vec3f(-2, -1, -16), 3, mat_4))
         self.objects.append(Sphere(Vec3f(4, 3, -16), 3, mat_3))
         self.objects.append(Cube(Vec3f(5, -4.0, -16), 2, mat_2));
-		
-		#self.objects = load_model("bunny.txt", mat_1)
+        
+        	
+	#self.objects = load_model("bunny.txt", mat_1)
         #s1 = Sphere(Vec3f(-3, 0, -16), 5, mat_3)
         #s2 = Sphere(Vec3f(0, 0, -16), 5, mat_2)
         #s3 = Sphere(Vec3f(3, 3, -16), 5, mat_3)

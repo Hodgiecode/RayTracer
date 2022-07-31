@@ -70,3 +70,39 @@ def crossProduct(vect_A, vect_B):
     p_z = vect_A.x * vect_B.y - vect_A.y * vect_B.x
     return Vec3f(p_x, p_y, p_z)
 
+def transpose_vector(vector):
+    result = []
+    for i in range(len(vector)):
+        result.append([vector[i]])
+
+    return result
+    
+def matrix_mult(m1, m2):
+    result = []
+    for i in range(len(m1)):
+       tmp = []
+       for j in range(len(m2[0])):
+           tmp.append(0)
+
+       result.append(tmp)
+
+    for i in range(len(m1)):
+       for j in range(len(m2[0])):
+           for k in range(len(m2)):
+               result[i][j] += m1[i][k] * m2[k][j]
+
+    return result
+
+
+def rotation(angle, vect):
+    vector = [vect.x, vect.y, vect.z]
+    
+    angle = angle * math.pi / 180
+    m_x = [[1,0,0],
+           [0,math.cos(angle),-math.sin(angle)],
+           [0,math.sin(angle), math.cos(angle)]
+           ]
+    
+    a = matrix_mult(m_x, transpose_vector(vector))
+    b = Vec3f(a[0][0], a[1][0], a[2][0])
+    return b

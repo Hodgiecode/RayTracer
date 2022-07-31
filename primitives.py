@@ -1,4 +1,4 @@
-from objects import Object, Vec3f, crossProduct, number_on_vector_mult
+from objects import Object, Vec3f, crossProduct, number_on_vector_mult, rotation
 from solver import Solver
 import math
 from numpy.polynomial import polynomial as P
@@ -115,7 +115,7 @@ class Cube(Object):
         for i in range(6):
             n = normals[i]
             n_dot_d = n * ray_dir
-            if n_dot_d >= 0.0:
+            if n_dot_d >= self.eps:
                 continue
 
             t = (n * o_to_c + self.side) / n_dot_d
@@ -419,35 +419,32 @@ class Hyperboloid(Object):
         
 #Torus
 class Torus(Object):   
-    def __init__(self, center, r1, r2, axis, material):
+    def __init__(self, center, r1, r2, angle, material):
         self.center = center
         self.r = r1
         self.R = r2
-        self.axis = axis
+
         self.material = material
-        
+
+        self.angle = angle
         self.normal = None
         self.tau = -1
         self.eps = 1e-6
 
     def check_intersect(self, ray_src, ray_dir):
-        self.axis.normalize()
-        
         e = ray_src - self.center
+        e = rotation(self.angle, e)
+        
         d = ray_dir
-
+        d = rotation(self.angle, d)
         d.normalize()
 
-        iR = self.R * self.R - self.r * self.r
-        oR = 4 * self.R * self.R
-        L = (e.x * e.x + e.y * e.y + e.z * e.z) + iR
-        e_dot_d = e * d
-
         c4 = (d.x * d.x + d.y * d.y + d.z * d.z) * (d.x * d.x + d.y * d.y + d.z * d.z)
-        c3 = 4 * (d.x * d.x + d.y * d.y + d.z * d.z) * e_dot_d
-        c2 = 2 * (2 * ((e_dot_d) * (e_dot_d)) + (d.x * d.x + d.y * d.y + d.z * d.z) * L) - oR * ((d.x * d.x) + (d.y * d.y))
-        c1 = 4 * e_dot_d * L - 2 * oR * (e.x * d.x + e.y * d.y)
-        c0 = (L * L) - oR * ((e.x * e.x) + (e.y * e.y))
+        c3 = 4 * (d.x * d.x + d.y * d.y + d.z * d.z) * (e * d)
+        c2 = 2 * (d.x * d.x + d.y * d.y + d.z * d.z) * (e.x * e.x + e.y * e.y + e.z * e.z - (self.r * self.r + self.R * self.R)) + 4 * (e * d) * (e * d) + 4 * self.R * self.R * d.y * d.y
+        c1 = 4 * (e.x * e.x + e.y * e.y + e.z * e.z - (self.r * self.r + self.R * self.R)) * (e * d) + 8 * self.R * self.R * e.y * d.y
+        c0 = (e.x * e.x + e.y * e.y + e.z * e.z - (self.r * self.r + self.R * self.R)) * (e.x * e.x + e.y * e.y + e.z * e.z - (self.r * self.r + self.R * self.R)) - 4 * self.R * self.R * (self.r * self.r - e.y * e.y)
+        
 		
         solver = Solver()
         num_roots = solver.solve_p4(c3/c4, c2/c4, c1/c4, c0/c4)
@@ -474,16 +471,22 @@ class Torus(Object):
     
     def isIntersect(self, ray_src, ray_dir):
         if self.check_intersect(ray_src, ray_dir):
-            self.intersection_point = ray_src +  ray_dir * self.tau
-            p = self.intersection_point - self.center;
+            self.intersection_point = ray_src + ray_dir * self.tau
+            p = self.intersection_point - self.center
+            p = rotation(self.angle, p)
 
-            cos_theta = (self.axis * p)/(math.sqrt(p.x * p.x + p.y * p.y + p.z * p.z));
-            sin_theta = math.sqrt(1 - cos_theta * cos_theta);
+            paramSquared = self.r * self.r + self.R * self.R
+            x = p.x
+            y = p.y
+            z = p.z
+            
+            sumSquared = x * x + y * y + z * z;
 
-            p.normalize();
+            self.normal = Vec3f(4.0 * x * (sumSquared - paramSquared),
+                                4.0 * y * (sumSquared - paramSquared + 2.0 * self.r * self.r),
+                                4.0 * z * (sumSquared - paramSquared))
 
-            self.normal = p - number_on_vector_mult((1.0 / sin_theta), number_on_vector_mult(self.R , (p - number_on_vector_mult(cos_theta, self.axis))))
-            self.normal = number_on_vector_mult((1.0 / self.r), self.normal)
+            self.normal = rotation(self.angle, self.normal)
             self.normal.normalize()
             return True
 			
